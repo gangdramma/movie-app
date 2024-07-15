@@ -10,12 +10,12 @@ const schema = yup.object().shape({
     .string()
     .required("Необходимо указать имя пользователя")
     .min(6, "Имя пользователя должно быть не менее 6 символов")
-    .max(25, "Имя пользователя должно содержать не более 25 символов"),
+    .max(25, "Имя пользователя должно содержать не более 25 символов"),
   password: yup
     .string()
     .required("Необходимо ввести пароль")
     .min(6, "Пароль должен быть не менее 6 символов")
-    .max(30, "Пароль должен содержать не более 30 символов"),
+    .max(30, "Пароль должен содержать не более 30 символов"),
   gmail: yup
     .string()
     .required("Необходимо указать gmail")
@@ -25,6 +25,7 @@ const schema = yup.object().shape({
 interface RegisterState {
   values: IForm.IRegister;
   errors: Partial<Record<keyof IForm.IRegister, string>>;
+  touched: Partial<Record<keyof IForm.IRegister, boolean>>;
 }
 
 interface RegisterProps {}
@@ -33,6 +34,7 @@ export default class Register extends Component<RegisterProps, RegisterState> {
   state: RegisterState = {
     values: { username: "", password: "", gmail: "" },
     errors: {},
+    touched: {},
   };
 
   validate = async (values: IForm.IRegister) => {
@@ -63,9 +65,7 @@ export default class Register extends Component<RegisterProps, RegisterState> {
     console.log("values = ", this.state.values);
   };
 
-  handleChange: React.ChangeEventHandler<HTMLInputElement> = async ({
-    target,
-  }) => {
+  handleChange: React.ChangeEventHandler<HTMLInputElement> = ({ target }) => {
     const { name, value } = target;
     this.setState(
       (prevState) => ({
@@ -73,13 +73,15 @@ export default class Register extends Component<RegisterProps, RegisterState> {
           ...prevState.values,
           [name]: value,
         },
+        touched: {
+          ...prevState.touched,
+          [name]: true,
+        },
       }),
       async () => {
-        const errors = await this.validate(this.state.values);
-        if (errors) {
-          this.setState({ errors });
-        } else {
-          this.setState({ errors: { ...this.state.errors, [name]: "" } });
+        if (this.state.touched[name as keyof IForm.IRegister]) {
+          const errors = await this.validate(this.state.values);
+          this.setState({ errors: errors || {} });
         }
       }
     );
@@ -102,6 +104,10 @@ export default class Register extends Component<RegisterProps, RegisterState> {
     );
   };
 
+  renderButton = (title: string) => (
+    <button className="auth-submit-btn">{title}</button>
+  );
+
   render() {
     return (
       <main>
@@ -117,7 +123,7 @@ export default class Register extends Component<RegisterProps, RegisterState> {
               {this.renderInput("username", "text", "Имя пользователя")}
               {this.renderInput("password", "password", "Пароль")}
               {this.renderInput("gmail", "email", "Gmail")}
-              <button className="auth-submit-btn">РЕГИСТРАЦИЯ</button>
+              {this.renderButton("РЕГИСТРАЦИЯ")}
               <div className="auth-go-to">
                 У вас уже есть аккаунт?{" "}
                 <span>

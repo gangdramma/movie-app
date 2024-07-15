@@ -10,17 +10,18 @@ const schema = yup.object().shape({
     .string()
     .required("Необходимо указать имя пользователя")
     .min(6, "Имя пользователя должно быть не менее 6 символов")
-    .max(25, "Имя пользователя должно содержать не более 25 символов"),
+    .max(25, "Имя пользователя должно содержать не более 25 символов"),
   password: yup
     .string()
     .required("Необходимо ввести пароль")
     .min(6, "Пароль должен быть не менее 6 символов")
-    .max(30, "Пароль должен содержать не более 30 символов"),
+    .max(30, "Пароль должен содержать не более 30 символов"),
 });
 
 interface LoginState {
   values: IForm.ILogin;
   errors: Partial<Record<keyof IForm.ILogin, string>>;
+  touched: Partial<Record<keyof IForm.ILogin, boolean>>;
 }
 
 interface LoginProps {}
@@ -29,6 +30,7 @@ export default class Login extends Component<LoginProps, LoginState> {
   state: LoginState = {
     values: { username: "", password: "" },
     errors: {},
+    touched: {},
   };
 
   validate = async (values: IForm.ILogin) => {
@@ -59,9 +61,7 @@ export default class Login extends Component<LoginProps, LoginState> {
     console.log("values = ", this.state.values);
   };
 
-  handleChange: React.ChangeEventHandler<HTMLInputElement> = async ({
-    target,
-  }) => {
+  handleChange: React.ChangeEventHandler<HTMLInputElement> = ({ target }) => {
     const { name, value } = target;
     this.setState(
       (prevState) => ({
@@ -69,13 +69,15 @@ export default class Login extends Component<LoginProps, LoginState> {
           ...prevState.values,
           [name]: value,
         },
+        touched: {
+          ...prevState.touched,
+          [name]: true,
+        },
       }),
       async () => {
-        const errors = await this.validate(this.state.values);
-        if (errors) {
-          this.setState({ errors });
-        } else {
-          this.setState({ errors: { ...this.state.errors, [name]: "" } });
+        if (this.state.touched[name as keyof IForm.ILogin]) {
+          const errors = await this.validate(this.state.values);
+          this.setState({ errors: errors || {} });
         }
       }
     );
@@ -98,6 +100,10 @@ export default class Login extends Component<LoginProps, LoginState> {
     );
   };
 
+  renderButton = (title: string) => (
+    <button className="auth-submit-btn">{title}</button>
+  );
+
   render() {
     return (
       <main>
@@ -110,9 +116,9 @@ export default class Login extends Component<LoginProps, LoginState> {
           </div>
           <div className="auth-body">
             <form onSubmit={this.handleSubmit}>
-              {this.renderInput("username", "text", "Username")}
-              {this.renderInput("password", "password", "Password")}
-              <button className="auth-submit-btn">ВОЙТИ</button>
+              {this.renderInput("username", "text", "Имя пользователя")}
+              {this.renderInput("password", "password", "Пароль")}
+              {this.renderButton("ВОЙТИ")}
               <div className="auth-go-to">
                 У вас нет учетной записи?{" "}
                 <span>
