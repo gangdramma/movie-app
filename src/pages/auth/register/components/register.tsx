@@ -4,6 +4,8 @@ import { IForm } from "../../../../modules/auth/types";
 import "../styles/register.scss";
 import * as yup from "yup";
 import { Input } from "../../../../components";
+import { Api } from "../../../../modules/auth";
+import toast from "react-hot-toast";
 
 const schema = yup.object().shape({
   username: yup
@@ -26,6 +28,7 @@ interface RegisterState {
   values: IForm.IRegister;
   errors: Partial<Record<keyof IForm.IRegister, string>>;
   touched: Partial<Record<keyof IForm.IRegister, boolean>>;
+  isLoading: boolean;
 }
 
 interface RegisterProps {}
@@ -35,6 +38,7 @@ export default class Register extends Component<RegisterProps, RegisterState> {
     values: { username: "", password: "", gmail: "" },
     errors: {},
     touched: {},
+    isLoading: false,
   };
 
   validate = async (values: IForm.IRegister) => {
@@ -55,14 +59,22 @@ export default class Register extends Component<RegisterProps, RegisterState> {
 
   handleSubmit: React.FormEventHandler<HTMLFormElement> = async (e) => {
     e.preventDefault();
+    this.setState({ isLoading: true });
     const errors = await this.validate(this.state.values);
 
     if (errors) {
-      this.setState({ errors });
+      this.setState({ errors, isLoading: false });
       return;
     }
 
-    console.log("values = ", this.state.values);
+    try {
+      await Api.Register(this.state.values);
+      toast.success("Успешно авторизован");
+    } catch (error) {
+      if (error instanceof Error) toast.error(error.message);
+    } finally {
+      this.setState({ isLoading: false });
+    }
   };
 
   handleChange: React.ChangeEventHandler<HTMLInputElement> = ({ target }) => {
@@ -105,7 +117,12 @@ export default class Register extends Component<RegisterProps, RegisterState> {
   };
 
   renderButton = (title: string) => (
-    <button className="auth-submit-btn">{title}</button>
+    <button
+      className={`auth-submit-btn ${this.state.isLoading ? "disabled" : ""}`}
+      disabled={this.state.isLoading}
+    >
+      {this.state.isLoading ? "РЕГИСТРАЦИЯ..." : title}
+    </button>
   );
 
   render() {

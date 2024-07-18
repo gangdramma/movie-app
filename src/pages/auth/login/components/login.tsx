@@ -4,6 +4,8 @@ import { IForm } from "../../../../modules/auth/types";
 import "../styles/login.scss";
 import * as yup from "yup";
 import { Input } from "../../../../components";
+import { Api } from "../../../../modules/auth";
+import toast from "react-hot-toast";
 
 const schema = yup.object().shape({
   username: yup
@@ -22,6 +24,7 @@ interface LoginState {
   values: IForm.ILogin;
   errors: Partial<Record<keyof IForm.ILogin, string>>;
   touched: Partial<Record<keyof IForm.ILogin, boolean>>;
+  isLoading: boolean;
 }
 
 interface LoginProps {}
@@ -31,6 +34,7 @@ export default class Login extends Component<LoginProps, LoginState> {
     values: { username: "", password: "" },
     errors: {},
     touched: {},
+    isLoading: false,
   };
 
   validate = async (values: IForm.ILogin) => {
@@ -51,14 +55,22 @@ export default class Login extends Component<LoginProps, LoginState> {
 
   handleSubmit: React.FormEventHandler<HTMLFormElement> = async (e) => {
     e.preventDefault();
+    this.setState({ isLoading: true });
     const errors = await this.validate(this.state.values);
 
     if (errors) {
-      this.setState({ errors });
+      this.setState({ errors, isLoading: false });
       return;
     }
 
-    console.log("values = ", this.state.values);
+    try {
+      await Api.Login(this.state.values);
+      toast.success("Успешно авторизован");
+    } catch (error) {
+      toast.error("Ошибка входа");
+    } finally {
+      this.setState({ isLoading: false });
+    }
   };
 
   handleChange: React.ChangeEventHandler<HTMLInputElement> = ({ target }) => {
@@ -101,7 +113,12 @@ export default class Login extends Component<LoginProps, LoginState> {
   };
 
   renderButton = (title: string) => (
-    <button className="auth-submit-btn">{title}</button>
+    <button
+      className={`auth-submit-btn ${this.state.isLoading ? "disabled" : ""}`}
+      disabled={this.state.isLoading}
+    >
+      {this.state.isLoading ? "ВОЙТИ..." : title}
+    </button>
   );
 
   render() {

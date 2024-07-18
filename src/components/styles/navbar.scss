@@ -2,12 +2,12 @@ header {
   nav {
     max-width: 1340px;
     margin: 0 auto;
-    padding: 30px 20px 20px;
+    padding: 30px 20px 20px 30px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    // user-select: none;
     position: relative;
+    overflow: hidden;
 
     .nav-logo {
       display: flex;
@@ -108,6 +108,7 @@ header {
       opacity: 0;
       visibility: hidden;
       transition: opacity 0.3s ease, visibility 0.3s ease;
+      z-index: 9;
 
       ul {
         display: flex;
@@ -166,6 +167,14 @@ header {
       .burger-menu {
         display: flex;
       }
+    }
+  }
+}
+
+@media (max-width: 370px) {
+  header {
+    nav {
+      padding: 20px 5px 5px;
     }
   }
 }

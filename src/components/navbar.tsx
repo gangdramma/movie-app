@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./styles/navbar.scss";
 import logo from "../assets/logo.png";
 import { Link } from "react-router-dom";
@@ -10,9 +10,17 @@ const Navbar = () => {
     setIsModalOpen(!isModalOpen);
   };
 
+  useEffect(() => {
+    if (isModalOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+  }, [isModalOpen]);
+
   return (
     <header>
-      <nav className={isModalOpen ? "modal-active" : ""}>
+      <nav className={isModalOpen ? "modal-active" : ""} id="nav">
         <Link to={"/"}>
           <div className="nav-logo">
             <img src={logo} alt="logo" />
@@ -25,13 +33,13 @@ const Navbar = () => {
             </Link>
             <li>ЖАНРЫ</li>
             <Link to={"/movies"}>
-              <li>фильмы</li>
+              <li>ФИЛЬМЫ</li>
             </Link>
             <Link to={"/auth/login"}>
               <li className="li-red">ВОЙТИ</li>
             </Link>
             <Link to={"/auth/register"}>
-              <li className="li-red">регистрация</li>
+              <li className="li-red">РЕГИСТРАЦИЯ</li>
             </Link>
           </ul>
         </div>
@@ -47,13 +55,13 @@ const Navbar = () => {
             </Link>
             <li>ЖАНРЫ</li>
             <Link to={"/movies"} onClick={toggleModal}>
-              <li>фильмы</li>
+              <li>ФИЛЬМЫ</li>
             </Link>
             <Link to={"/auth/login"} onClick={toggleModal}>
               <li className="li-red">ВОЙТИ</li>
             </Link>
             <Link to={"/auth/register"} onClick={toggleModal}>
-              <li className="li-red">регистрация</li>
+              <li className="li-red">РЕГИСТРАЦИЯ</li>
             </Link>
           </ul>
         </div>
